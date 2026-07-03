@@ -121,5 +121,42 @@ void main() {
         ..addSubject(name: 'C', mark: 90);
       expect(provider.passingCount, 2);
     });
+
+    test('updateById replaces name/mark in place, trims and clamps', () {
+      final provider = SubjectProvider()
+        ..addSubject(name: 'Math', mark: 80)
+        ..addSubject(name: 'Science', mark: 40);
+
+      final originalId = provider.subjects[0].id;
+      final updated = provider.updateById(
+        originalId,
+        name: '  Mathematics  ',
+        mark: 250, // out of range, should clamp to 100
+      );
+
+      expect(updated, isNotNull);
+      expect(updated!.id, originalId);
+      expect(updated.name, 'Mathematics');
+      expect(updated.mark, 100);
+      // Total subject count is unchanged.
+      expect(provider.totalSubjects, 2);
+      // Average mark recomputes against the new value.
+      expect(provider.averageMark, closeTo(70.0, 1e-9));
+    });
+
+    test('updateById returns null for an unknown id', () {
+      final provider = SubjectProvider()..addSubject(name: 'Math', mark: 80);
+      expect(provider.updateById('does-not-exist', name: 'X'), isNull);
+    });
+
+    test('updateById ignores empty name and out-of-range mark', () {
+      final provider = SubjectProvider()..addSubject(name: 'Math', mark: 80);
+      final id = provider.subjects.first.id;
+      // Blank name should keep the old name.
+      provider.updateById(id, name: '   ', mark: -10);
+      final after = provider.subjects.first;
+      expect(after.name, 'Math');
+      expect(after.mark, 0); // clamped
+    });
   });
 }

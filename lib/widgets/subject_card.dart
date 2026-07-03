@@ -2,22 +2,19 @@ import 'package:flutter/material.dart';
 
 import '../models/subject.dart';
 import 'grade_chip.dart';
+import 'subject_icons.dart';
 
 /// Tile-style card showing one [Subject]. Used inside a [Dismissible] so
 /// it stays purely presentational.
 class SubjectCard extends StatelessWidget {
-  const SubjectCard({super.key, required this.subject});
+  const SubjectCard({
+    super.key,
+    required this.subject,
+    this.onEdit,
+  });
 
   final Subject subject;
-
-  String get _initials {
-    final parts =
-        subject.name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty);
-    final list = parts.toList(growable: false);
-    if (list.isEmpty) return '?';
-    if (list.length == 1) return list.first[0].toUpperCase();
-    return (list.first[0] + list.last[0]).toUpperCase();
-  }
+  final VoidCallback? onEdit;
 
   @override
   Widget build(BuildContext context) {
@@ -38,12 +35,10 @@ class SubjectCard extends StatelessWidget {
                 color: scheme.primaryContainer,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Text(
-                _initials,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: scheme.onPrimaryContainer,
-                  fontWeight: FontWeight.bold,
-                ),
+              child: Icon(
+                getSubjectIcon(subject.name),
+                color: scheme.onPrimaryContainer,
+                size: 22,
               ),
             ),
             const SizedBox(width: 14),
@@ -77,11 +72,18 @@ class SubjectCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
             GradeChip(
               grade: subject.grade,
               heroTag: 'grade_${subject.id}',
             ),
+            if (onEdit != null)
+              IconButton(
+                tooltip: 'Edit subject',
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.edit_rounded),
+                onPressed: onEdit,
+              ),
           ],
         ),
       ),

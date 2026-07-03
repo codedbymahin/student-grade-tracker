@@ -81,6 +81,25 @@ class SubjectProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Updates the subject identified by [id] with a new [name] and/or
+  /// [mark]. Returns the updated [Subject], or `null` if the id is
+  /// unknown. Trims the name and clamps the mark using the same rules
+  /// as [addSubject] so the two paths stay consistent.
+  Subject? updateById(String id, {String? name, double? mark}) {
+    final index = _indexOf(id);
+    if (index == null) return null;
+    final current = _subjects[index];
+    final trimmedName = name?.trim();
+    final newName = (trimmedName == null || trimmedName.isEmpty)
+        ? current.name
+        : trimmedName;
+    final newMark =
+        mark == null ? current.mark : mark.clamp(0.0, 100.0).toDouble();
+    _subjects[index] = current.copyWith(name: newName, mark: newMark);
+    notifyListeners();
+    return _subjects[index];
+  }
+
   /// Clears every subject. Provided for completeness even though the UI
   /// does not expose it yet.
   void clear() {
