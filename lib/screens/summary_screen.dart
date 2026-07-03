@@ -19,8 +19,7 @@ class SummaryScreen extends StatelessWidget {
       return const EmptyState(
         icon: Icons.insights_rounded,
         title: 'Nothing to summarise',
-        message:
-            'Add your first subject from the Add Subject tab and your '
+        message: 'Add your first subject from the Add Subject tab and your '
             'summary will appear here.',
       );
     }
@@ -142,7 +141,8 @@ class _StatGroup extends StatelessWidget {
       spaced.add(children[i]);
       if (i != children.length - 1) spaced.add(const SizedBox(height: 10));
     }
-    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: spaced);
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch, children: spaced);
   }
 }
 
@@ -214,8 +214,7 @@ class _HeroCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                Icon(_iconFor(overall),
-                    color: scheme.onPrimary, size: 20),
+                Icon(_iconFor(overall), color: scheme.onPrimary, size: 20),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(

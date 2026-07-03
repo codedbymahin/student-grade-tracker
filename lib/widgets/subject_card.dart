@@ -30,13 +30,18 @@ class SubjectCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 22,
-              backgroundColor: scheme.primaryContainer,
-              foregroundColor: scheme.onPrimaryContainer,
+            Container(
+              width: 44,
+              height: 44,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: scheme.primaryContainer,
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Text(
                 _initials,
                 style: theme.textTheme.titleMedium?.copyWith(
+                  color: scheme.onPrimaryContainer,
                   fontWeight: FontWeight.bold,
                 ),
               ),
