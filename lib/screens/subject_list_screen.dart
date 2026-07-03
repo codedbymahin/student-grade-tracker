@@ -19,12 +19,13 @@ class SubjectListScreen extends StatelessWidget {
       return const EmptyState(
         icon: Icons.menu_book_rounded,
         title: 'No subjects yet',
-        message: 'Add one from the Add tab to get started.',
+        message:
+            'Add your first subject from the Add Subject tab to see it here.',
       );
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
       itemCount: subjects.length,
       itemBuilder: (context, index) {
         final subject = subjects[index];
@@ -53,7 +54,7 @@ class _DismissibleRow extends StatelessWidget {
         messenger.hideCurrentSnackBar();
         messenger.showSnackBar(
           SnackBar(
-            content: Text('${subject.name} deleted'),
+            content: const Text('Subject deleted.'),
             action: SnackBarAction(
               label: 'Undo',
               onPressed: () => provider.restore(subject, index: index),

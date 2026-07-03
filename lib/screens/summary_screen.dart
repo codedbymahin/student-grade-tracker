@@ -19,13 +19,17 @@ class SummaryScreen extends StatelessWidget {
       return const EmptyState(
         icon: Icons.insights_rounded,
         title: 'Nothing to summarise',
-        message: 'Add at least one subject to see your progress here.',
+        message:
+            'Add your first subject from the Add Subject tab and your '
+            'summary will appear here.',
       );
     }
 
     final average = provider.averageMark;
     final overall = provider.overallGrade ?? Grade.f;
-    final passingRatio = provider.passingCount / provider.totalSubjects;
+    final passing = provider.passingCount;
+    final failing = provider.totalSubjects - passing;
+    final passingRatio = passing / provider.totalSubjects;
     final highest = provider.highestMark ?? 0;
     final lowest = provider.lowestMark ?? 0;
 
@@ -34,34 +38,111 @@ class SummaryScreen extends StatelessWidget {
       children: [
         Text(
           'Live Summary',
-          style: theme.textTheme.titleLarge,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 4),
+        Text(
+          'Auto-updates as you add or remove subjects.',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 20),
         _HeroCard(overall: overall, average: average),
-        const SizedBox(height: 12),
-        StatCard(
-          icon: Icons.school_rounded,
-          label: 'Total subjects',
-          value: provider.totalSubjects.toString(),
+        const SizedBox(height: 20),
+        _StatGroup(
+          children: [
+            StatCard(
+              icon: Icons.school_rounded,
+              label: 'Total subjects',
+              value: provider.totalSubjects.toString(),
+            ),
+            StatCard(
+              icon: Icons.trending_up_rounded,
+              label: 'Highest mark',
+              value: _formatMark(highest),
+            ),
+            StatCard(
+              icon: Icons.trending_down_rounded,
+              label: 'Lowest mark',
+              value: _formatMark(lowest),
+            ),
+          ],
         ),
-        StatCard(
-          icon: Icons.trending_up_rounded,
-          label: 'Highest mark',
-          value: highest.toStringAsFixed(1),
+        const SizedBox(height: 20),
+        const _SectionHeader(label: 'Pass / Fail breakdown'),
+        const SizedBox(height: 8),
+        _StatGroup(
+          children: [
+            StatCard(
+              icon: Icons.check_circle_rounded,
+              label: 'Passing subjects',
+              value: passing.toString(),
+              accent: theme.colorScheme.primaryContainer,
+            ),
+            StatCard(
+              icon: Icons.cancel_rounded,
+              label: 'Failing subjects',
+              value: failing.toString(),
+              accent: theme.colorScheme.errorContainer,
+            ),
+          ],
         ),
-        StatCard(
-          icon: Icons.trending_down_rounded,
-          label: 'Lowest mark',
-          value: lowest.toStringAsFixed(1),
-        ),
+        const SizedBox(height: 20),
         _PassingCard(
-          passingCount: provider.passingCount,
+          passingCount: passing,
           totalCount: provider.totalSubjects,
           ratio: passingRatio,
         ),
       ],
     );
+  }
+
+  /// Formats a mark as an integer when whole, otherwise with one decimal.
+  String _formatMark(double v) {
+    if (v == v.roundToDouble()) return v.toStringAsFixed(0);
+    return v.toStringAsFixed(1);
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.label});
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, top: 4, bottom: 4),
+      child: Text(
+        label.toUpperCase(),
+        style: theme.textTheme.labelMedium?.copyWith(
+          color: theme.colorScheme.primary,
+          letterSpacing: 1.2,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+/// Vertical stack of [StatCard]s with consistent gaps between them.
+class _StatGroup extends StatelessWidget {
+  const _StatGroup({required this.children});
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    final spaced = <Widget>[];
+    for (var i = 0; i < children.length; i++) {
+      spaced.add(children[i]);
+      if (i != children.length - 1) spaced.add(const SizedBox(height: 10));
+    }
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: spaced);
   }
 }
 
@@ -79,7 +160,7 @@ class _HeroCard extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [scheme.primary, scheme.primaryContainer],
+          colors: [scheme.primary, scheme.tertiary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -118,14 +199,74 @@ class _HeroCard extends StatelessWidget {
               ),
               _HeroStat(
                 label: 'Average mark',
-                value: average.toStringAsFixed(1),
+                value: _formatAverage(average),
                 emphasize: false,
               ),
             ],
           ),
+          const SizedBox(height: 18),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: scheme.onPrimary.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(_iconFor(overall),
+                    color: scheme.onPrimary, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _messageFor(overall),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: scheme.onPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  String _formatAverage(double v) {
+    if (v == v.roundToDouble()) return v.toStringAsFixed(0);
+    return v.toStringAsFixed(1);
+  }
+
+  IconData _iconFor(Grade g) {
+    switch (g) {
+      case Grade.a:
+        return Icons.emoji_events_rounded;
+      case Grade.b:
+        return Icons.thumb_up_rounded;
+      case Grade.c:
+        return Icons.trending_up_rounded;
+      case Grade.f:
+        return Icons.refresh_rounded;
+      case Grade():
+        return Icons.info_outline_rounded;
+    }
+  }
+
+  String _messageFor(Grade g) {
+    switch (g) {
+      case Grade.a:
+        return 'Excellent performance!';
+      case Grade.b:
+        return 'Great work!';
+      case Grade.c:
+        return 'Keep improving!';
+      case Grade.f:
+        return 'Needs more practice.';
+      case Grade():
+        return '';
+    }
   }
 }
 

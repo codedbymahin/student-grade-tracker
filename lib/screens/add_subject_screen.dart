@@ -66,7 +66,7 @@ class _AddSubjectScreenState extends State<AddSubjectScreen> {
     messenger.hideCurrentSnackBar();
     messenger.showSnackBar(
       SnackBar(
-        content: Text('$name added'),
+        content: const Text('Subject added successfully.'),
         action: SnackBarAction(
           label: 'View',
           onPressed: () => context.read<NavigationProvider>().setIndex(1),
@@ -111,7 +111,7 @@ class _AddSubjectScreenState extends State<AddSubjectScreen> {
               },
               onFieldSubmitted: (_) => _markFocus.requestFocus(),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
             TextFormField(
               controller: _markCtrl,
               focusNode: _markFocus,
@@ -124,7 +124,7 @@ class _AddSubjectScreenState extends State<AddSubjectScreen> {
               ],
               decoration: const InputDecoration(
                 labelText: 'Mark (0 - 100)',
-                hintText: '0–100',
+                hintText: 'Enter a mark between 0 and 100',
                 prefixIcon: Icon(Icons.score_rounded),
               ),
               validator: (value) {
@@ -141,11 +141,11 @@ class _AddSubjectScreenState extends State<AddSubjectScreen> {
               const SizedBox(height: 20),
               _PreviewCard(grade: _previewGrade!),
             ],
-            const SizedBox(height: 28),
+            const SizedBox(height: 32),
             FilledButton.icon(
               onPressed: _submit,
-              icon: const Icon(Icons.add),
-              label: const Text('Add subject'),
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Add Subject'),
             ),
           ],
         ),
@@ -164,24 +164,52 @@ class _Header extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [scheme.primary, scheme.primaryContainer],
+          colors: [scheme.primary, scheme.tertiary],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.primary.withValues(alpha: 0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.assignment_turned_in_rounded,
-              size: 32, color: scheme.onPrimary),
-          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: scheme.onPrimary.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.assignment_turned_in_rounded,
+                size: 24, color: scheme.onPrimary),
+          ),
+          const SizedBox(width: 14),
           Expanded(
-            child: Text(
-              'Add a new subject',
-              style: theme.textTheme.titleLarge?.copyWith(
-                color: scheme.onPrimary,
-                fontWeight: FontWeight.w700,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Add New Subject',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: scheme.onPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Enter the subject name and the mark you scored.',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: scheme.onPrimary.withValues(alpha: 0.85),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

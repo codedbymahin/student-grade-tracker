@@ -27,7 +27,16 @@ class HomeShell extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Student Grade Tracker'),
+        titleSpacing: 0,
+        title: const Row(
+          children: [
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Icon(Icons.school_rounded),
+            ),
+            Text('Student Grade Tracker'),
+          ],
+        ),
         actions: [
           Selector<ThemeProvider, ThemeMode>(
             selector: (_, p) => p.mode,

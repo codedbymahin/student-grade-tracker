@@ -14,7 +14,7 @@ void main() {
     // Enter a valid subject.
     await tester.enterText(find.byType(TextFormField).at(0), 'Mathematics');
     await tester.enterText(find.byType(TextFormField).at(1), '85');
-    await tester.tap(find.text('Add subject'));
+    await tester.tap(find.text('Add Subject'));
     await tester.pumpAndSettle();
 
     // Switch to the Subjects tab.
@@ -22,7 +22,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Mathematics'), findsOneWidget);
-    expect(find.text('Mark 85.0'), findsOneWidget);
+    expect(find.text('Mark 85'), findsOneWidget);
     expect(find.text('A'), findsOneWidget); // grade chip
 
     // Switch to the Summary tab.

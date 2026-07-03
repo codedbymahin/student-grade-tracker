@@ -28,13 +28,20 @@ class StatCard extends StatelessWidget {
         : scheme.onPrimaryContainer;
 
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
+      margin: EdgeInsets.zero,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         child: Row(
           children: [
-            CircleAvatar(
-                backgroundColor: bg, foregroundColor: fg, child: Icon(icon)),
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: bg,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: fg),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(label, style: theme.textTheme.titleMedium),
@@ -42,8 +49,8 @@ class StatCard extends StatelessWidget {
             Text(
               value,
               style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: scheme.secondary,
+                fontWeight: FontWeight.w700,
+                color: scheme.primary,
               ),
             ),
           ],
