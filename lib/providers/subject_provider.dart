@@ -36,6 +36,22 @@ class SubjectProvider extends ChangeNotifier {
   /// Number of subjects with a mark of 50 or above.
   int get passingCount => _subjects.where((s) => s.mark >= 50).length;
 
+  /// Count of subjects in each [Grade] bucket. Always returns the four
+  /// canonical grades (a, b, c, f) so the summary screen can iterate
+  /// over it without null checks.
+  Map<Grade, int> get distributionByGrade {
+    final counts = <Grade, int>{
+      Grade.a: 0,
+      Grade.b: 0,
+      Grade.c: 0,
+      Grade.f: 0,
+    };
+    for (final subject in _subjects) {
+      counts[subject.grade] = (counts[subject.grade] ?? 0) + 1;
+    }
+    return counts;
+  }
+
   /// Highest mark in the list, or `null` when empty.
   double? get highestMark {
     if (_subjects.isEmpty) return null;

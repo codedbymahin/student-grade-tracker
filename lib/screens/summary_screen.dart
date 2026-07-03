@@ -16,11 +16,18 @@ class SummaryScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     if (provider.totalSubjects == 0) {
-      return const EmptyState(
-        icon: Icons.insights_rounded,
-        title: 'Nothing to summarise',
-        message: 'Add your first subject from the Add Subject tab and your '
-            'summary will appear here.',
+      return ListView(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        children: const [
+          _WelcomeHeader(overall: null),
+          SizedBox(height: 32),
+          EmptyState(
+            icon: Icons.insights_rounded,
+            title: 'Nothing to summarise',
+            message: 'Add your first subject from the Add Subject tab and '
+                'your summary will appear here.',
+          ),
+        ],
       );
     }
 
@@ -35,6 +42,8 @@ class SummaryScreen extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
       children: [
+        _WelcomeHeader(overall: overall),
+        const SizedBox(height: 12),
         Text(
           'Live Summary',
           style: theme.textTheme.titleLarge?.copyWith(
@@ -52,6 +61,8 @@ class SummaryScreen extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         _HeroCard(overall: overall, average: average),
+        const SizedBox(height: 20),
+        _GradeDistributionCard(counts: provider.distributionByGrade),
         const SizedBox(height: 20),
         _StatGroup(
           children: [
@@ -105,6 +116,230 @@ class SummaryScreen extends StatelessWidget {
   String _formatMark(double v) {
     if (v == v.roundToDouble()) return v.toStringAsFixed(0);
     return v.toStringAsFixed(1);
+  }
+}
+
+class _WelcomeHeader extends StatelessWidget {
+  const _WelcomeHeader({required this.overall});
+
+  /// Overall grade used to pick the motivational line. Pass `null`
+  /// (the empty-state case) to render the default welcome.
+  final Grade? overall;
+
+  /// Time-of-day greeting. Buckets: 5–11 morning, 12–16 afternoon,
+  /// 17–20 evening, 21–4 night.
+  static ({String greeting, IconData icon}) _greeting() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour <= 11) {
+      return (greeting: 'Good Morning!', icon: Icons.wb_sunny_rounded);
+    }
+    if (hour >= 12 && hour <= 16) {
+      return (greeting: 'Good Afternoon!', icon: Icons.wb_cloudy_rounded);
+    }
+    if (hour >= 17 && hour <= 20) {
+      return (greeting: 'Good Evening!', icon: Icons.nights_stay_rounded);
+    }
+    return (greeting: 'Good Night!', icon: Icons.bedtime_rounded);
+  }
+
+  /// Short motivational line tied to the student's overall grade.
+  static String _motivation(Grade? g) {
+    switch (g) {
+      case Grade.a:
+        return 'Excellent work! You\'re performing amazingly.';
+      case Grade.b:
+        return 'Great job! Keep pushing forward.';
+      case Grade.c:
+        return 'You\'re making progress. Stay consistent.';
+      case Grade.f:
+        return 'Don\'t give up. Every expert started as a beginner.';
+      case null:
+        return 'Start adding your first subject to track your '
+            'academic progress.';
+      case Grade():
+        return 'Keep tracking your academic performance.';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final g = _greeting();
+    final motivation = _motivation(overall);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [scheme.primary, scheme.tertiary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: scheme.primary.withValues(alpha: 0.25),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: scheme.onPrimary.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(g.icon, color: scheme.onPrimary, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  g.greeting,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: scheme.onPrimary,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Student Grade Tracker',
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: scheme.onPrimary.withValues(alpha: 0.95),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            motivation,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: scheme.onPrimary.withValues(alpha: 0.85),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GradeDistributionCard extends StatelessWidget {
+  const _GradeDistributionCard({required this.counts});
+
+  final Map<Grade, int> counts;
+
+  /// Material icon for each grade bucket. Kept in a single table so
+  /// the mapping is easy to scan.
+  static const Map<Grade, IconData> _icons = {
+    Grade.a: Icons.emoji_events_rounded,
+    Grade.b: Icons.menu_book_rounded,
+    Grade.c: Icons.auto_stories_rounded,
+    Grade.f: Icons.warning_amber_rounded,
+  };
+
+  /// Stable display order — top to bottom on screen.
+  static const List<Grade> _order = [Grade.a, Grade.b, Grade.c, Grade.f];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.bar_chart_rounded, color: scheme.primary),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Grade Distribution',
+                    style: theme.textTheme.titleMedium,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            for (var i = 0; i < _order.length; i++) ...[
+              _DistributionRow(
+                grade: _order[i],
+                icon: _icons[_order[i]]!,
+                count: counts[_order[i]] ?? 0,
+              ),
+              if (i != _order.length - 1) const SizedBox(height: 4),
+            ],
+            const SizedBox(height: 4),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DistributionRow extends StatelessWidget {
+  const _DistributionRow({
+    required this.grade,
+    required this.icon,
+    required this.count,
+  });
+
+  final Grade grade;
+  final IconData icon;
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: scheme.primary),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            '${grade.letter} Subjects',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: scheme.primaryContainer,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(
+            count.toString(),
+            style: theme.textTheme.titleMedium?.copyWith(
+              color: scheme.onPrimaryContainer,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 

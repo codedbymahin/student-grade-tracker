@@ -158,5 +158,37 @@ void main() {
       expect(after.name, 'Math');
       expect(after.mark, 0); // clamped
     });
+
+    test('distributionByGrade returns counts per grade', () {
+      final provider = SubjectProvider()
+        ..addSubject(name: 'A1', mark: 95) // A
+        ..addSubject(name: 'A2', mark: 80) // A
+        ..addSubject(name: 'B1', mark: 70) // B
+        ..addSubject(name: 'C1', mark: 55) // C
+        ..addSubject(name: 'F1', mark: 30); // F
+
+      final dist = provider.distributionByGrade;
+      expect(dist[Grade.a], 2);
+      expect(dist[Grade.b], 1);
+      expect(dist[Grade.c], 1);
+      expect(dist[Grade.f], 1);
+    });
+
+    test('distributionByGrade updates after edit and delete', () {
+      final provider = SubjectProvider()
+        ..addSubject(name: 'Math', mark: 95) // A
+        ..addSubject(name: 'Sci', mark: 30); // F
+      expect(provider.distributionByGrade[Grade.a], 1);
+      expect(provider.distributionByGrade[Grade.f], 1);
+
+      // Editing Math from 95 -> 55 drops the A count, adds a C count.
+      provider.updateById(provider.subjects[0].id, mark: 55);
+      expect(provider.distributionByGrade[Grade.a], 0);
+      expect(provider.distributionByGrade[Grade.c], 1);
+
+      // Deleting Sci removes the F count entirely.
+      provider.deleteById(provider.subjects[1].id);
+      expect(provider.distributionByGrade[Grade.f], 0);
+    });
   });
 }

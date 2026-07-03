@@ -29,6 +29,14 @@ void main() {
     await tester.tap(find.text('Summary'));
     await tester.pumpAndSettle();
 
+    // Scroll the Summary list until the "Total subjects" stat card is on-screen.
+    await tester.scrollUntilVisible(
+      find.text('Total subjects'),
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
     expect(find.text('Total subjects'), findsOneWidget);
     expect(find.text('1'), findsWidgets); // total count value
   });
